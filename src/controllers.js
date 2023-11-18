@@ -1,5 +1,5 @@
 const { nanoid } = require('nanoid');
-const bookself = require('./bookself');
+const bookshelf = require('./bookshelf');
 
 class Controller {
   create(request, h) {
@@ -16,7 +16,7 @@ class Controller {
       const id = nanoid(16);
       const createdTime = new Date().toISOString();
 
-      bookself.push({
+      bookshelf.push({
         id,
         name,
         year,
@@ -31,9 +31,10 @@ class Controller {
         updatedAt: createdTime,
       });
 
-      return h
-        .response({ status: 'success', message: 'Buku berhasil ditambahkan', data: { bookId: nanoid(16) } })
-        .code(201);
+      if (!bookshelf.filter((x) => x.id === id).length > 0)
+        throw { errCode: 500, errStatus: 'fail', message: 'Buku gagal ditambahkan' };
+
+      return h.response({ status: 'success', message: 'Buku berhasil ditambahkan', data: { bookId: id } }).code(201);
     } catch (error) {
       return h
         .response({
@@ -47,10 +48,10 @@ class Controller {
   store(request, h) {
     try {
       const { name, reading, finished } = request.query;
-      let book = bookself;
-      if (name) book = book.filter((x) => x.name.toLowerCase().includes(name.toLowerCase()));
-      if (reading) book = book.filter((x) => x.reading === !!Number(reading));
-      if (finished) book = book.filter((x) => x.finished === !!Number(finished));
+      let book = bookshelf;
+      if (name) book = bookshelf.filter((x) => new RegExp(name.toLowerCase(), 'i').test(x.name.toLowerCase()));
+      else if (reading) book = bookshelf.filter((x) => x.reading === !!Number(reading));
+      else if (finished) book = bookshelf.filter((x) => x.finished === !!Number(finished));
       return h
         .response({
           status: 'success',
@@ -76,9 +77,9 @@ class Controller {
   index(request, h) {
     try {
       const { bookId } = request.params;
-      const book = bookself.filter((x) => x.id === bookId)[0];
+      const book = bookshelf.filter((x) => x.id === bookId)[0];
       if (!bookId || !book) throw { errCode: 404, errStatus: 'fail', message: 'Buku tidak ditemukan' };
-      return h.response({ status: 'success', data: { book } }).code(200);
+      return h.response({ status: 'success', data: { book: book } }).code(200);
     } catch (error) {
       return h
         .response({
@@ -92,7 +93,7 @@ class Controller {
   update(request, h) {
     try {
       const { bookId } = request.params;
-      if (!bookId) throw { errCode: 404, errStatus: 'fail', message: 'Gagal memperbarui buku. Id tidak ditemukan' };
+      // if (!bookId) throw { errCode: 404, errStatus: 'fail', message: 'Gagal memperbarui buku. Id tidak ditemukan' };
 
       const { name, year, author, summary, publisher, pageCount, readPage, reading } = request.payload;
       if (!name) throw { errCode: 400, errStatus: 'fail', message: 'Gagal memperbarui buku. Mohon isi nama buku' };
@@ -104,11 +105,11 @@ class Controller {
         };
 
       const updatedTime = new Date().toISOString();
-      const index = bookself.findIndex((x) => x.id === bookId);
+      const index = bookshelf.findIndex((x) => x.id === bookId);
       if (index === -1)
         throw { errCode: 404, errStatus: 'fail', message: 'Gagal memperbarui buku. Id tidak ditemukan' };
-      bookself[index] = {
-        ...bookself[index],
+      bookshelf[index] = {
+        ...bookshelf[index],
         name,
         year,
         author,
@@ -135,10 +136,10 @@ class Controller {
   delete(request, h) {
     try {
       const { bookId } = request.params;
-      if (!bookId) throw { errCode: 404, errStatus: 'fail', message: 'Buku gagal dihapus. Id tidak ditemukan' };
-      const index = bookself.findIndex((x) => x.id === bookId);
+      // if (!bookId) throw { errCode: 404, errStatus: 'fail', message: 'Buku gagal dihapus. Id tidak ditemukan' };
+      const index = bookshelf.findIndex((x) => x.id === bookId);
       if (index === -1) throw { errCode: 404, errStatus: 'fail', message: 'Buku gagal dihapus. Id tidak ditemukan' };
-      bookself.splice(index, 1);
+      bookshelf.splice(index, 1);
       return h.response({ status: 'success', message: 'Buku berhasil dihapus' }).code(200);
     } catch (error) {
       return h
