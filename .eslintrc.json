@@ -5,9 +5,12 @@
     "es2021": true,
     "node": true
   },
-  "extends": "eslint:recommended",
+  "extends": ["eslint:recommended", "airbnb-base"],
   "parserOptions": {
     "ecmaVersion": "latest"
   },
-  "rules": {}
+  "rules": {
+    "no-console": "off",
+    "class-methods-use-this": "off"
+  }
 }

@@ -22,7 +22,9 @@
   },
   "homepage": "https://github.com/Paiiss/bookshelf#readme",
   "devDependencies": {
-    "eslint": "^8.54.0"
+    "eslint": "^8.54.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.32.0"
   },
   "dependencies": {
     "@hapi/hapi": "^21.3.2",
